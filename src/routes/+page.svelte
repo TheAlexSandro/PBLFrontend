@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Logo from '#lib/assets/logo.png';
-	import { PUBLIC_API_URL } from '$app/env/public';
+	import { PUBLIC_API } from '$app/env/public';
 
 	let isLoading = $state(false);
 	const getDownloadUrl = async () => {
 		isLoading = true;
-		const res = await fetch(`${PUBLIC_API_URL}/app/download`);
+		const res = await fetch(`${PUBLIC_API}/app/download`);
 		if (!res.ok) {
 			isLoading = false;
 			return alert('Error');
