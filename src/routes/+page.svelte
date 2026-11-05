@@ -3,7 +3,8 @@
 	import { PUBLIC_API } from '$app/env/public';
 
 	let isLoading = $state(false);
-	const getDownloadUrl = async () => {
+	const getDownloadUrl = async (e: Event) => {
+		e.preventDefault();
 		isLoading = true;
 		const res = await fetch(`${PUBLIC_API}/app/download`);
 		if (!res.ok) {
