@@ -13,7 +13,7 @@
 		}
 		const resJson = await res.json();
 
-		window.location = resJson.url;
+		window.location = resJson['result'].url;
 		isLoading = false;
 	};
 </script>
