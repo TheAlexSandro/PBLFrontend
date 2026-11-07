@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Logo from '#lib/assets/logo.png';
-	import { PUBLIC_GITHUB, APP_REPO, FRONTEND_REPO, BACKEND_REPO } from '$app/env/public';
+	import { PUBLIC_GITHUB, APP_REPO, FRONTEND_REPO, BACKEND_REPO, TICM_REPO } from '$app/env/public';
 
 	let isLoading = $state(false);
 	const getDownloadUrl = async (e: Event) => {
@@ -18,7 +18,7 @@
 	};
 
 	const renderRepo = (type: string) => {
-		return `${PUBLIC_GITHUB}/${type === 'APP' ? APP_REPO : type === 'FRONTEND' ? FRONTEND_REPO : BACKEND_REPO}`;
+		return `${PUBLIC_GITHUB}/${type === 'APP' ? APP_REPO : type === 'FRONTEND' ? FRONTEND_REPO : type === 'backend' ? BACKEND_REPO : TICM_REPO}`;
 	};
 </script>
 
@@ -41,20 +41,22 @@
 	</section>
 
 	<section class="container platforms">
+		<article class="box">
+			<div class="box-head">
+				<i class="ri-lightbulb-line"></i>
+				<h3>Cek Log Perubahan:</h3>
+			</div>
+			<a href="{renderRepo('APP')}/wiki/Changelog" target="_blank" rel="noopener noreferrer"
+				>{renderRepo('APP')}/wiki/Changelog</a
+			>
+		</article>
+
 		<article class="card android">
 			<div class="card-head">
-				<i class="ri-android-line"></i>
+				<i class="ri-android-line" style="color: var(--color-success);"></i>
 				<h3>Android</h3>
 			</div>
-			<div class="box">
-				<div class="box-head">
-					<i class="ri-lightbulb-line"></i>
-					<h3>Cek Log Perubahan:</h3>
-				</div>
-				<a href="{renderRepo('APP')}/wiki/Changelog" target="_blank" rel="noopener noreferrer"
-					>{renderRepo('APP')}/wiki/Changelog</a
-				>
-			</div>
+
 			<p>Unduh file APK, lalu pasang langsung di HP Anda.</p>
 			<ol>
 				<li>Tekan tombol <strong>Unduh APK</strong>.</li>
@@ -65,6 +67,17 @@
 				>{!isLoading ? 'Unduh APK' : 'Mengunduh...'}</button
 			>
 		</article>
+
+		<article class="card android">
+			<div class="card-head">
+				<i class="ri-apple-line" style="color: var(--color-primary);"></i>
+				<h3>iOS</h3>
+			</div>
+
+			<p>Aplikasi belum tersedia untuk iOS.</p>
+		</article>
+
+		<div class="hr"></div>
 
 		<article class="card source">
 			<div class="card-head">
@@ -91,10 +104,21 @@
 						>{renderRepo('BACKEND')}</a
 					>
 				</li>
+				<li>
+					Mesin Pembuat Tiket: <a
+						href={renderRepo('TICM')}
+						target="_blank"
+						rel="noopener noreferrer">{renderRepo('TICM')}</a
+					>
+				</li>
 			</ol>
 			<p>Anda juga dapat memberikan kontribusi</p>
 		</article>
 	</section>
+
+	<footer>
+		<p>By Alumni SMKN 1 Blitar</p>
+	</footer>
 </main>
 
 <style>
@@ -182,10 +206,6 @@
 	.card-head h3 {
 		font-size: 1.25rem;
 		font-weight: 600;
-	}
-
-	.android i {
-		color: var(--color-success);
 	}
 
 	.card i {
@@ -285,5 +305,21 @@
 	.source a {
 		overflow-wrap: anywhere;
 		line-height: 1.5;
+	}
+
+	.hr {
+		margin: 10px 20px;
+		border-bottom: 1px solid var(--color-neutral);
+	}
+
+	footer {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		border-top: 1px solid var(--color-border);
+		padding: 12px 0;
+		color: var(--color-neutral);
 	}
 </style>

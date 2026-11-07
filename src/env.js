@@ -20,5 +20,9 @@ export const variables = defineEnvVars({
 	BACKEND_REPO: {
 		public: true,
 		static: true
+	},
+	TICM_REPO: {
+		public: true,
+		static: true
 	}
 });
