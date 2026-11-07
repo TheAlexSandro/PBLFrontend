@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Logo from '#lib/assets/logo.png';
-	import { PUBLIC_API } from '$app/env/public';
+	import { PUBLIC_GITHUB, APP_REPO, FRONTEND_REPO, BACKEND_REPO } from '$app/env/public';
 
 	let isLoading = $state(false);
 	const getDownloadUrl = async (e: Event) => {
 		e.preventDefault();
 		isLoading = true;
-		const res = await fetch(`${PUBLIC_API}/app/download`);
+		const res = await fetch(`api/proxy?path=app&ep=download`);
 		if (!res.ok) {
 			isLoading = false;
 			return alert('Error');
@@ -15,6 +15,10 @@
 
 		window.location = resJson['result'].url;
 		isLoading = false;
+	};
+
+	const renderRepo = (type: string) => {
+		return `${PUBLIC_GITHUB}/${type === 'APP' ? APP_REPO : type === 'FRONTEND' ? FRONTEND_REPO : BACKEND_REPO}`;
 	};
 </script>
 
@@ -42,6 +46,15 @@
 				<i class="ri-android-line"></i>
 				<h3>Android</h3>
 			</div>
+			<div class="box">
+				<div class="box-head">
+					<i class="ri-lightbulb-line"></i>
+					<h3>Cek Log Perubahan:</h3>
+				</div>
+				<a href="{renderRepo('APP')}/wiki/Changelog" target="_blank" rel="noopener noreferrer"
+					>{renderRepo('APP')}/wiki/Changelog</a
+				>
+			</div>
 			<p>Unduh file APK, lalu pasang langsung di HP Anda.</p>
 			<ol>
 				<li>Tekan tombol <strong>Unduh APK</strong>.</li>
@@ -52,10 +65,45 @@
 				>{!isLoading ? 'Unduh APK' : 'Mengunduh...'}</button
 			>
 		</article>
+
+		<article class="card source">
+			<div class="card-head">
+				<i class="ri-code-s-slash-line"></i>
+				<h3>Kode Sumber</h3>
+			</div>
+			<p>
+				Proyek ini bersifat open source dan dapat dikelola oleh siapapun. Kode sumbernya dapat
+				dilihat di:
+			</p>
+			<ol>
+				<li>
+					Aplikasi Scanner: <a href={renderRepo('APP')} target="_blank" rel="noopener noreferrer"
+						>{renderRepo('APP')}</a
+					>
+				</li>
+				<li>
+					Frontend (web): <a href={renderRepo('FRONTEND')} target="_blank" rel="noopener noreferrer"
+						>{renderRepo('FRONTEND')}</a
+					>
+				</li>
+				<li>
+					Backend: <a href={renderRepo('BACKEND')} target="_blank" rel="noopener noreferrer"
+						>{renderRepo('BACKEND')}</a
+					>
+				</li>
+			</ol>
+			<p>Anda juga dapat memberikan kontribusi</p>
+		</article>
 	</section>
 </main>
 
 <style>
+	ol,
+	li,
+	p {
+		font-size: 14px;
+	}
+
 	.container {
 		width: 100%;
 		max-width: 600px;
@@ -109,7 +157,7 @@
 
 	.platforms {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		grid-template-columns: 1fr;
 		gap: 20px;
 		padding-bottom: 64px;
 	}
@@ -124,7 +172,8 @@
 		border-radius: 16px;
 	}
 
-	.card-head {
+	.card-head,
+	.box-head {
 		display: flex;
 		align-items: center;
 		gap: 10px;
@@ -190,5 +239,51 @@
 		background-color: var(--color-border);
 		color: var(--color-neutral);
 		cursor: not-allowed;
+	}
+
+	.box {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 14px 16px;
+		background-color: var(--color-primary-soft);
+		border: 1px solid var(--color-primary-border);
+		border-left: 4px solid var(--color-primary);
+		border-radius: 12px;
+		font-size: 0.875rem;
+	}
+
+	.box-head {
+		gap: 8px;
+	}
+
+	.box-head h3 {
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	.box-head i {
+		color: var(--color-primary);
+		font-size: 20px;
+		display: inline-flex;
+		line-height: 1;
+	}
+
+	.box a {
+		overflow-wrap: anywhere;
+		line-height: 1.5;
+	}
+
+	.source {
+		grid-column: 1 / -1;
+	}
+
+	.source i {
+		color: var(--color-primary);
+	}
+
+	.source a {
+		overflow-wrap: anywhere;
+		line-height: 1.5;
 	}
 </style>

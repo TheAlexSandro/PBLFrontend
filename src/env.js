@@ -1,8 +1,24 @@
 import { defineEnvVars } from '@sveltejs/kit/env';
 
 export const variables = defineEnvVars({
-	PUBLIC_API: {
+	API_URL: {
+		public: false,
+		static: true
+	},
+	PUBLIC_GITHUB: {
 		public: true,
-		static: true,
+		static: true
+	},
+	APP_REPO: {
+		public: true,
+		static: true
+	},
+	FRONTEND_REPO: {
+		public: true,
+		static: true
+	},
+	BACKEND_REPO: {
+		public: true,
+		static: true
 	}
 });
