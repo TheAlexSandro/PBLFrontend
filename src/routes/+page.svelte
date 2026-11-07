@@ -51,7 +51,7 @@
 			>
 		</article>
 
-		<article class="card android">
+		<article class="card">
 			<div class="card-head">
 				<i class="ri-android-line" style="color: var(--color-success);"></i>
 				<h3>Android</h3>
@@ -68,7 +68,7 @@
 			>
 		</article>
 
-		<article class="card android">
+		<article class="card">
 			<div class="card-head">
 				<i class="ri-apple-line" style="color: var(--color-primary);"></i>
 				<h3>iOS</h3>
