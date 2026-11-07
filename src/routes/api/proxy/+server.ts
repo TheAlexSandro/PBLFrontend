@@ -3,6 +3,7 @@ import { error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 
 const SAFE_SEGMENT = /^[a-zA-Z0-9_-]+$/;
+const FORWARD_HEADERS: string[] = ['X-Scanner-Key', 'X-App-Version'];
 
 const proxy: RequestHandler = async ({ url, request }) => {
 	const path = url.searchParams.get('path');
@@ -16,12 +17,19 @@ const proxy: RequestHandler = async ({ url, request }) => {
 	forwarded.delete('path');
 	forwarded.delete('ep');
 	const query = forwarded.toString();
-	const targetUrl = `${API_URL}/${path}/${ep}${query ? `?${query}` : ''}`;
+
+	const base = API_URL.replace(/\/+$/, '');
+	const targetUrl = `${base}/${path}/${ep}${query ? `?${query}` : ''}`;
 
 	const headers = new Headers({
 		Accept: 'application/json',
 		Cookie: request.headers.get('cookie') ?? ''
 	});
+
+	for (const name of FORWARD_HEADERS) {
+		const value = request.headers.get(name);
+		if (value !== null) headers.set(name, value);
+	}
 
 	const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
 	if (hasBody) {
