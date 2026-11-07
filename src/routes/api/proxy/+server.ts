@@ -36,10 +36,15 @@ const proxy: RequestHandler = async ({ url, request }) => {
 		headers.set('Content-Type', request.headers.get('content-type') ?? 'application/json');
 	}
 
+	const rawBody = hasBody ? await request.text() : '';
+	if (rawBody) {
+		headers.set('Content-Type', request.headers.get('content-type') ?? 'application/json');
+	}
+
 	const upstream = await fetch(targetUrl, {
 		method: request.method,
 		headers,
-		body: hasBody ? await request.text() : undefined
+		body: rawBody || undefined
 	});
 
 	const response = new Response(await upstream.text(), {
