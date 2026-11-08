@@ -70,7 +70,7 @@
 
 		<article class="card">
 			<div class="card-head">
-				<i class="ri-apple-line" style="color: var(--color-primary);"></i>
+				<i class="ri-apple-line" style="color: white;"></i>
 				<h3>iOS</h3>
 			</div>
 
@@ -299,7 +299,7 @@
 	}
 
 	.source i {
-		color: var(--color-primary);
+		color: var(--color-warning);
 	}
 
 	.source a {
