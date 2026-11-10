@@ -1,8 +1,11 @@
 <script lang="ts">
 	import Logo from '#lib/assets/logo.png';
 	import { PUBLIC_GITHUB, APP_REPO, FRONTEND_REPO, BACKEND_REPO, TICM_REPO } from '$app/env/public';
+	import { onMount } from 'svelte';
 
 	let isLoading = $state(false);
+	let windowLoading = $state(true);
+	let appVer = $state('');
 	const getDownloadUrl = async (e: Event) => {
 		e.preventDefault();
 		isLoading = true;
@@ -17,8 +20,18 @@
 		isLoading = false;
 	};
 
+	onMount(async () => {
+		const res = await fetch(`api/proxy?path=app&ep=version`);
+		if (!res.ok) {
+			return alert('Error loading page');
+		}
+		const resJson = await res.json();
+		appVer = resJson['result']['latestVersion'];
+		windowLoading = false;
+	});
+
 	const renderRepo = (type: string) => {
-		return `${PUBLIC_GITHUB}/${type === 'APP' ? APP_REPO : type === 'FRONTEND' ? FRONTEND_REPO : type === 'backend' ? BACKEND_REPO : TICM_REPO}`;
+		return `${PUBLIC_GITHUB}/${type === 'APP' ? APP_REPO : type === 'FRONTEND' ? FRONTEND_REPO : type === 'BACKEND' ? BACKEND_REPO : TICM_REPO}`;
 	};
 </script>
 
@@ -27,99 +40,108 @@
 	<meta name="description" content="Unduh aplikasi scan tiket untuk Android dan iOS." />
 </svelte:head>
 
-<main>
-	<section class="navbar">
-		<div class="container nav-inner">
-			<img src={Logo} alt="Logo SMKN 1 Blitar" />
-			<h1>SMKN 1 Blitar</h1>
-		</div>
-	</section>
-
-	<section class="container hero">
-		<h2>Unduh Aplikasi Scan Tiket</h2>
-		<p>Pilih sesuai perangkat yang Anda gunakan.</p>
-	</section>
-
-	<section class="container platforms">
-		<article class="box">
-			<div class="box-head">
-				<i class="ri-lightbulb-line"></i>
-				<h3>Cek Log Perubahan:</h3>
+{#if windowLoading}
+	<div id="splash">
+		<img src={Logo} alt="Logo" class="logo" />
+		<div class="spinner" role="status" aria-label="Memuat"></div>
+	</div>
+{:else}
+	<main>
+		<section class="navbar">
+			<div class="container nav-inner">
+				<img src={Logo} alt="Logo SMKN 1 Blitar" />
+				<h1>SMKN 1 Blitar</h1>
 			</div>
-			<a href="{renderRepo('APP')}/wiki/Changelog" target="_blank" rel="noopener noreferrer"
-				>{renderRepo('APP')}/wiki/Changelog</a
-			>
-		</article>
+		</section>
 
-		<article class="card">
-			<div class="card-head">
-				<i class="ri-android-line" style="color: var(--color-success);"></i>
-				<h3>Android</h3>
-			</div>
+		<section class="container hero">
+			<h2>Unduh Aplikasi Scan Tiket</h2>
+			<p>Pilih sesuai perangkat yang Anda gunakan.</p>
+		</section>
 
-			<p>Unduh file APK, lalu pasang langsung di HP Anda.</p>
-			<ol>
-				<li>Tekan tombol <strong>Unduh APK</strong>.</li>
-				<li>Buka file hasil unduhan.</li>
-				<li>Jika diminta, izinkan pemasangan dari sumber tidak dikenal untuk browser Anda.</li>
-			</ol>
-			<button class="btn" onclick={getDownloadUrl} disabled={isLoading}
-				>{!isLoading ? 'Unduh APK' : 'Mengunduh...'}</button
-			>
-		</article>
+		<section class="container platforms">
+			<article class="box">
+				<div class="box-head">
+					<i class="ri-lightbulb-line"></i>
+					<h3>Cek Log Perubahan:</h3>
+				</div>
+				<a href="{renderRepo('APP')}/wiki/Changelog" target="_blank" rel="noopener noreferrer"
+					>{renderRepo('APP')}/wiki/Changelog</a
+				>
+			</article>
 
-		<article class="card">
-			<div class="card-head">
-				<i class="ri-apple-line" style="color: white;"></i>
-				<h3>iOS</h3>
-			</div>
+			<article class="card">
+				<div class="card-head">
+					<i class="ri-android-line" style="color: var(--color-success);"></i>
+					<h3>Android</h3>
+				</div>
 
-			<p>Aplikasi belum tersedia untuk iOS.</p>
-		</article>
+				<p>Unduh file APK, lalu pasang langsung di HP Anda.</p>
+				<ol>
+					<li>Tekan tombol <strong>Unduh APK</strong>.</li>
+					<li>Buka file hasil unduhan.</li>
+					<li>Jika diminta, izinkan pemasangan dari sumber tidak dikenal untuk browser Anda.</li>
+				</ol>
+				<button class="btn" onclick={getDownloadUrl} disabled={isLoading}
+					>{!isLoading ? `Unduh APK (v${appVer})` : 'Mengunduh...'}</button
+				>
+			</article>
 
-		<div class="hr"></div>
+			<article class="card">
+				<div class="card-head">
+					<i class="ri-apple-line" style="color: white;"></i>
+					<h3>iOS</h3>
+				</div>
 
-		<article class="card source">
-			<div class="card-head">
-				<i class="ri-code-s-slash-line"></i>
-				<h3>Kode Sumber</h3>
-			</div>
-			<p>
-				Proyek ini bersifat open source dan dapat dikelola oleh siapapun. Kode sumbernya dapat
-				dilihat di:
-			</p>
-			<ol>
-				<li>
-					Aplikasi Scanner: <a href={renderRepo('APP')} target="_blank" rel="noopener noreferrer"
-						>{renderRepo('APP')}</a
-					>
-				</li>
-				<li>
-					Frontend (web): <a href={renderRepo('FRONTEND')} target="_blank" rel="noopener noreferrer"
-						>{renderRepo('FRONTEND')}</a
-					>
-				</li>
-				<li>
-					Backend: <a href={renderRepo('BACKEND')} target="_blank" rel="noopener noreferrer"
-						>{renderRepo('BACKEND')}</a
-					>
-				</li>
-				<li>
-					Mesin Pembuat Tiket: <a
-						href={renderRepo('TICM')}
-						target="_blank"
-						rel="noopener noreferrer">{renderRepo('TICM')}</a
-					>
-				</li>
-			</ol>
-			<p>Anda juga dapat memberikan kontribusi</p>
-		</article>
-	</section>
+				<p>Aplikasi belum tersedia untuk iOS.</p>
+			</article>
 
-	<footer>
-		<p>By Alumni SMKN 1 Blitar</p>
-	</footer>
-</main>
+			<div class="hr"></div>
+
+			<article class="card source">
+				<div class="card-head">
+					<i class="ri-code-s-slash-line"></i>
+					<h3>Kode Sumber</h3>
+				</div>
+				<p>
+					Proyek ini bersifat open source dan dapat dikelola oleh siapapun. Kode sumbernya dapat
+					dilihat di:
+				</p>
+				<ol>
+					<li>
+						Aplikasi Scanner: <a href={renderRepo('APP')} target="_blank" rel="noopener noreferrer"
+							>{renderRepo('APP')}</a
+						>
+					</li>
+					<li>
+						Frontend (web): <a
+							href={renderRepo('FRONTEND')}
+							target="_blank"
+							rel="noopener noreferrer">{renderRepo('FRONTEND')}</a
+						>
+					</li>
+					<li>
+						Backend: <a href={renderRepo('BACKEND')} target="_blank" rel="noopener noreferrer"
+							>{renderRepo('BACKEND')}</a
+						>
+					</li>
+					<li>
+						Mesin Pembuat Tiket: <a
+							href={renderRepo('TICM')}
+							target="_blank"
+							rel="noopener noreferrer">{renderRepo('TICM')}</a
+						>
+					</li>
+				</ol>
+				<p>Anda juga dapat memberikan kontribusi</p>
+			</article>
+		</section>
+
+		<footer>
+			<p>By Alumni SMKN 1 Blitar</p>
+		</footer>
+	</main>
+{/if}
 
 <style>
 	ol,
