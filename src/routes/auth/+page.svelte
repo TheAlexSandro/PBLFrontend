@@ -45,49 +45,55 @@
 {:else}
 	<Navbar />
 
-	<form class="auth" method="post" onsubmit={auth}>
-		<div class="top">
-			<h1>Autentikasi</h1>
-			<p>Masukkan kata sandi untuk mengakses dashboard</p>
-		</div>
+	<section class="container">
+		<form class="auth" method="post" onsubmit={auth}>
+			<div class="top">
+				<h1>Autentikasi</h1>
+				<p>Masukkan kata sandi untuk mengakses dashboard</p>
+			</div>
 
-		<label for="sandi">Kata Sandi</label>
-		<div class="field">
-			<input
-				disabled={isLoading}
-				id="sandi"
-				name="sandi"
-				type={showPassword ? 'text' : 'password'}
-				placeholder="••••••••"
-				autocomplete="current-password"
-				bind:value={pwd}
-				required
-			/>
+			<label for="sandi">Kata Sandi</label>
+			<div class="field">
+				<input
+					disabled={isLoading}
+					id="sandi"
+					name="sandi"
+					type={showPassword ? 'text' : 'password'}
+					placeholder="••••••••"
+					autocomplete="current-password"
+					bind:value={pwd}
+					required
+				/>
 
-			{#if pwd}
-				<button disabled={isLoading} type="button" aria-label="rm" onclick={() => (pwd = '')}>
-					<i class="ri-close-circle-line"></i>
-				</button>
-			{/if}
-		</div>
-		{#if inputError}<div class="error">{inputError}</div>{/if}
+				{#if pwd}
+					<button disabled={isLoading} type="button" aria-label="rm" onclick={() => (pwd = '')}>
+						<i class="ri-close-circle-line"></i>
+					</button>
+				{/if}
+			</div>
+			{#if inputError}<div class="error">{inputError}</div>{/if}
 
-		<label class="show">
-			<input type="checkbox" bind:checked={showPassword} />
-			Tampilkan kata sandi
-		</label>
+			<label class="show">
+				<input type="checkbox" bind:checked={showPassword} />
+				Tampilkan kata sandi
+			</label>
 
-		<button disabled={isLoading} class="btn" type="submit"
-			>{!isLoading ? 'Masuk' : 'Memproses...'}</button
-		>
+			<button disabled={isLoading} class="btn" type="submit"
+				>{!isLoading ? 'Masuk' : 'Memproses...'}</button
+			>
 
-		<div class="bot">Kata sandi dapat dilihat melalui spreadsheet.</div>
-	</form>
+			<div class="bot">Kata sandi dapat dilihat melalui spreadsheet.</div>
+		</form>
+	</section>
 
 	<Footer />
 {/if}
 
 <style>
+	.container {
+		min-height: 100vh;
+	}
+
 	.auth {
 		display: flex;
 		flex-direction: column;
@@ -99,7 +105,6 @@
 		border: 1px solid var(--color-border);
 		border-radius: 20px;
 		color: var(--color-on-dark);
-		min-height: 100vh;
 	}
 
 	.auth .top {
