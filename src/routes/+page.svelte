@@ -1,33 +1,39 @@
 <script lang="ts">
-	import Logo from '#lib/assets/logo.png';
 	import { PUBLIC_GITHUB, APP_REPO, FRONTEND_REPO, BACKEND_REPO, TICM_REPO } from '$app/env/public';
 	import { onMount } from 'svelte';
+	import Navbar from '#lib/components/navbar.svelte';
+	import Footer from '#lib/components/footer.svelte';
+	import Load from '#lib/components/load.svelte';
+	import { proxyGet } from '#lib/utils/api.ts';
 
 	let isLoading = $state(false);
 	let windowLoading = $state(true);
 	let appVer = $state('');
+
 	const getDownloadUrl = async (e: Event) => {
 		e.preventDefault();
 		isLoading = true;
-		const res = await fetch(`api/proxy?path=app&ep=download`);
-		if (!res.ok) {
+		try {
+			const { url } = await proxyGet<{ url: string }>({ path: 'app', ep: 'download' });
+			window.location.href = url;
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'Error');
+		} finally {
 			isLoading = false;
-			return alert('Error');
 		}
-		const resJson = await res.json();
-
-		window.location = resJson['result'].url;
-		isLoading = false;
 	};
 
 	onMount(async () => {
-		const res = await fetch(`api/proxy?path=app&ep=version`);
-		if (!res.ok) {
-			return alert('Error loading page');
+		try {
+			const { latestVersion } = await proxyGet<{ latestVersion: string }>({
+				path: 'app',
+				ep: 'version'
+			});
+			appVer = latestVersion;
+			windowLoading = false;
+		} catch (err) {
+			alert(err instanceof Error ? err.message : 'Error loading page');
 		}
-		const resJson = await res.json();
-		appVer = resJson['result']['latestVersion'];
-		windowLoading = false;
 	});
 
 	const renderRepo = (type: string) => {
@@ -36,23 +42,15 @@
 </script>
 
 <svelte:head>
-	<title>Unduh Aplikasi Scan Tiket | SMKN 1 Blitar</title>
-	<meta name="description" content="Unduh aplikasi scan tiket untuk Android dan iOS." />
+	<title>Unduh Aplikasi Scan Tiket - SMKN 1 Blitar</title>
+	<meta name="description" content="Unduh Aplikasi Scan Tiket - SMKN 1 Blitar" />
 </svelte:head>
 
 {#if windowLoading}
-	<div id="splash">
-		<img src={Logo} alt="Logo" class="logo" />
-		<div class="spinner" role="status" aria-label="Memuat"></div>
-	</div>
+	<Load />
 {:else}
 	<main>
-		<section class="navbar">
-			<div class="container nav-inner">
-				<img src={Logo} alt="Logo SMKN 1 Blitar" />
-				<h1>SMKN 1 Blitar</h1>
-			</div>
-		</section>
+		<Navbar />
 
 		<section class="container hero">
 			<h2>Unduh Aplikasi Scan Tiket</h2>
@@ -137,9 +135,7 @@
 			</article>
 		</section>
 
-		<footer>
-			<p>By Alumni SMKN 1 Blitar</p>
-		</footer>
+		<Footer />
 	</main>
 {/if}
 
@@ -155,34 +151,6 @@
 		max-width: 600px;
 		margin: 0 auto;
 		padding: 0 20px;
-	}
-
-	.navbar {
-		position: sticky;
-		top: 0;
-		z-index: 10;
-		background-color: var(--color-bg);
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.nav-inner {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-		padding-top: 12px;
-		padding-bottom: 12px;
-	}
-
-	.nav-inner img {
-		height: 40px;
-		width: auto;
-	}
-
-	.nav-inner h1 {
-		font-size: 1.125rem;
-		font-weight: 600;
-		line-height: 1;
 	}
 
 	.hero {
@@ -332,16 +300,5 @@
 	.hr {
 		margin: 10px 20px;
 		border-bottom: 1px solid var(--color-neutral);
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		text-align: center;
-		border-top: 1px solid var(--color-border);
-		padding: 12px 0;
-		color: var(--color-neutral);
 	}
 </style>

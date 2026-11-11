@@ -44,7 +44,8 @@ const proxy: RequestHandler = async ({ url, request }) => {
 	const upstream = await fetch(targetUrl, {
 		method: request.method,
 		headers,
-		body: rawBody || undefined
+		body: rawBody || undefined,
+		credentials: 'include'
 	});
 
 	const response = new Response(await upstream.text(), {
