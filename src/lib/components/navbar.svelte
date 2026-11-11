@@ -45,10 +45,10 @@
 <svelte:window onclick={onWindowClick} onkeydown={onWindowKeydown} />
 
 <section class="navbar">
-	<div class="container nav-inner">
+	<a href="/" class="container nav-inner">
 		<img src={Logo} alt="Logo SMKN 1 Blitar" />
 		<h1>SMKN 1 Blitar</h1>
-	</div>
+	</a>
 
 	<div class="user" bind:this={root}>
 		<button
@@ -118,6 +118,8 @@
 		gap: 12px;
 		padding-top: 12px;
 		padding-bottom: 12px;
+		color: var(--color-on-dark);
+		text-decoration: none;
 	}
 
 	.navbar .nav-inner img {
