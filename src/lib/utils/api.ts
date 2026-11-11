@@ -39,9 +39,12 @@ async function request<T>(params: Params, opts: Options = {}): Promise<T> {
 		}
 		throw new ApiError('Tidak diizinkan', 401);
 	}
-	if (!res.ok) throw new ApiError(`Server bermasalah (${res.status})`, res.status);
-
 	const json = await res.json().catch(() => null);
+	if (!res.ok)
+		throw new ApiError(
+			json['message'] ? `Error: ${json['message']}` : `Internal server error.`,
+			res.status
+		);
 	if (json?.ok === false) throw new ApiError(json?.message ?? 'Permintaan gagal', res.status);
 	return json?.result as T;
 }
