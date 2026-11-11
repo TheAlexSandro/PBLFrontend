@@ -149,7 +149,7 @@
 			<label class="filter">
 				Tahun
 				<select value={year} onchange={onYearChange}>
-					<option value="">Pilih tahun</option>
+					<option value="">Semua tahun</option>
 					{#each years as y}
 						<option value={String(y)}>{y}</option>
 					{/each}

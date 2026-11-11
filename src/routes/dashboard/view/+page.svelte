@@ -179,7 +179,7 @@
 				<label class="filter">
 					Tahun
 					<select value={year} onchange={(e) => go({ year: e.currentTarget.value, page: 1 })}>
-						<option value="">Pilih tahun</option>
+						<option value="">Semua tahun</option>
 						{#each years as y}
 							<option value={String(y)}>{y}</option>
 						{/each}
