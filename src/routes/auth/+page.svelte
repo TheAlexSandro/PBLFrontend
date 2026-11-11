@@ -99,6 +99,7 @@
 		border: 1px solid var(--color-border);
 		border-radius: 20px;
 		color: var(--color-on-dark);
+		min-height: 100vh;
 	}
 
 	.auth .top {

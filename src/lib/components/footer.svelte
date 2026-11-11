@@ -10,7 +10,7 @@
 		align-items: center;
 		text-align: center;
 		border-top: 1px solid var(--color-border);
-		padding: 12px 0;
+		padding: 17px 0;
 		color: var(--color-neutral);
 	}
 </style>
