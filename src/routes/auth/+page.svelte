@@ -152,13 +152,14 @@
 	}
 
 	.auth .field input {
+		background: none;
 		width: 100%;
 		height: 100%;
 		padding: 0 16px;
+		border-radius: 14px;
 		border: 0;
 		outline: 0;
 		text-align: center;
-		background: none;
 		color: var(--color-on-dark);
 	}
 
