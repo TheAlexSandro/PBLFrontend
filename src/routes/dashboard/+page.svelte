@@ -92,7 +92,6 @@
 		try {
 			const res: any = await proxyPost({ path: 'realtime', ep: 'ticket' });
 			const ticket = res?.ticket ?? res?.data?.ticket;
-			console.log('ticket:', ticket);
 			return typeof ticket === 'string' ? ticket : null;
 		} catch (e) {
 			console.error('gagal ambil ticket:', e);
