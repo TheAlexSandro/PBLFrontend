@@ -5,6 +5,10 @@ export const variables = defineEnvVars({
 		public: false,
 		static: true
 	},
+	PUBLIC_API_URL: {
+		public: true,
+		static: true
+	},
 	PUBLIC_GITHUB: {
 		public: true,
 		static: true

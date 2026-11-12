@@ -2,15 +2,16 @@
 	import Navbar from '#lib/components/navbar.svelte';
 	import Footer from '#lib/components/footer.svelte';
 	import Load from '#lib/components/load.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { isLoggedIn } from '#lib/utils/utils.ts';
 	import { proxyGet, proxyPost } from '#lib/utils/api.ts';
+	import { io, type Socket } from 'socket.io-client';
+	import { PUBLIC_API_URL } from '$app/env/public';
 
 	type Stats = {
 		total: number;
 		scanned: number;
 		notScanned: number;
-		thisYear: number;
 		perYear: { year: number; scanned: number }[];
 	};
 
@@ -67,9 +68,53 @@
 	let scanner = $state('');
 	let scannerBusy = $state(false);
 	let scannerError = $state('');
+	let wsConnected = $state(false);
+	let socket: Socket | null = null;
+
+	onMount(async () => {
+		const log = await isLoggedIn();
+		if (!log) return (window.location.href = '/auth');
+		windowLoading = false;
+		void loadStats();
+		void loadScanner();
+		connectRealtime();
+	});
+
+	onDestroy(() => {
+		socket?.disconnect();
+		socket = null;
+	});
 
 	const fmt = (n: number) => new Intl.NumberFormat('id-ID').format(n);
 	const viewHref = (type: string) => `/dashboard/view?type=${type}${year ? `&year=${year}` : ''}`;
+
+	function connectRealtime() {
+		if (socket) return;
+		const s = io(`${PUBLIC_API_URL}/wss`, { withCredentials: true });
+		socket = s;
+
+		s.on('connect', () => (wsConnected = true));
+		s.on('disconnect', (reason) => {
+			wsConnected = false;
+			if (reason === 'io server disconnect') setTimeout(() => socket && s.connect(), 3000);
+		});
+
+		s.on('ticket:stats', applyStats);
+		s.on('scanner:status', ({ active }: { active: boolean }) => {
+			scanner = active ? 'yes' : 'no';
+		});
+	}
+
+	function applyStats(s: Stats) {
+		years = [...new Set([...years, ...s.perYear.map((p) => p.year)])].sort((a, b) => b - a);
+
+		if (!year) {
+			stats = s;
+			return;
+		}
+		const scanned = s.perYear.find((p) => p.year === Number(year))?.scanned ?? 0;
+		stats = { total: s.total, scanned, notScanned: s.total - scanned, perYear: s.perYear };
+	}
 
 	async function loadScanner() {
 		try {
@@ -119,14 +164,6 @@
 		year = e.currentTarget.value;
 		void loadStats();
 	}
-
-	onMount(async () => {
-		const log = await isLoggedIn();
-		if (!log) return (window.location.href = '/auth');
-		windowLoading = false;
-		void loadStats();
-		void loadScanner();
-	});
 </script>
 
 <svelte:head>
@@ -143,7 +180,11 @@
 		<header class="head">
 			<div>
 				<h1>Dashboard PBL</h1>
-				<p>Ringkasan tiket Dies Natalis SMKN 1 Blitar tahun {stats?.thisYear}</p>
+				<p>
+					Ringkasan tiket Dies Natalis SMKN 1 Blitar {#if year}
+						tahun {year}
+					{/if}
+				</p>
 			</div>
 
 			<label class="filter">
@@ -177,6 +218,10 @@
 				</div>
 			{/each}
 		</section>
+		<span class="ws" class:on={wsConnected} role="status">
+			<span class="dot"></span>
+			{wsConnected ? 'Realtime Update' : 'Tidak Terhubung'}
+		</span>
 
 		<nav class="menu" aria-label="Daftar tiket">
 			<h2>Lihat daftar tiket</h2>
@@ -197,6 +242,7 @@
 			<h2>Pengaturan</h2>
 			<section
 				class="scanner"
+				class:on={scanner === 'yes'}
 				aria-label="Status scanner"
 				style="--tone: {scanner === 'yes' ? 'var(--color-success)' : 'var(--color-neutral)'}"
 			>
@@ -275,13 +321,18 @@
 	.filter select {
 		min-width: 160px;
 		height: 44px;
-		padding: 0 12px;
+		padding: 0 40px 0 14px;
 		color: var(--color-on-dark);
-		background: var(--color-surface);
+		background-color: var(--color-surface);
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 16px center;
 		border: 1px solid var(--color-border);
 		border-radius: 12px;
 		color-scheme: dark;
 		cursor: pointer;
+		appearance: none;
+		-webkit-appearance: none;
 	}
 
 	.filter select:focus-visible {
@@ -333,21 +384,21 @@
 		min-width: 0;
 	}
 
+	.scanner .info .label {
+		font-size: 1.05rem;
+		font-weight: 600;
+	}
+
 	.scanner .state {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		margin-top: 2px;
-		font-size: 1.2rem;
-		font-weight: 700;
-		line-height: 1.6;
-	}
-
-	.scanner .dot {
-		width: 10px;
-		height: 10px;
-		background: var(--tone);
-		border-radius: 50%;
+		gap: 10px;
+		color: inherit;
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			transform 0.1s ease;
+		color: var(--color-neutral);
 	}
 
 	.sk.sm {
@@ -422,11 +473,6 @@
 		color: var(--tone);
 		background: color-mix(in srgb, var(--tone) 14%, transparent);
 		border-radius: 14px;
-	}
-
-	.label {
-		font-size: 0.85rem;
-		color: var(--color-neutral);
 	}
 
 	.num {
@@ -513,5 +559,43 @@
 	.item .chev {
 		font-size: 1.4rem;
 		color: var(--color-neutral);
+	}
+
+	.ws {
+		display: inline-flex;
+		align-items: center;
+		width: fit-content;
+		margin-top: -10px;
+		gap: 8px;
+		padding: 6px 15px;
+		font-size: 0.8rem;
+		color: var(--color-neutral);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+	}
+
+	.dot {
+		width: 8px;
+		height: 8px;
+		background: var(--color-danger);
+		border-radius: 50%;
+		transition: background 0.2s ease;
+	}
+
+	.ws.on .dot,
+	.scanner.on .dot {
+		background: var(--color-success);
+		animation: ping 1.8s ease-out infinite;
+	}
+
+	@keyframes ping {
+		0% {
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 55%, transparent);
+		}
+		70%,
+		100% {
+			box-shadow: 0 0 0 6px transparent;
+		}
 	}
 </style>
