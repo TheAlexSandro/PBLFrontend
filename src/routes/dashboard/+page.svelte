@@ -104,6 +104,7 @@
 
 		s.on('connect', () => (wsConnected = true));
 		s.on('disconnect', (reason) => {
+			console.warn('WS disconnect:', reason);
 			wsConnected = false;
 			if (reason === 'io server disconnect') setTimeout(() => socket && s.connect(), 3000);
 		});
