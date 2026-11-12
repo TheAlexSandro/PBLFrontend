@@ -88,26 +88,45 @@
 	const fmt = (n: number) => new Intl.NumberFormat('id-ID').format(n);
 	const viewHref = (type: string) => `/dashboard/view?type=${type}${year ? `&year=${year}` : ''}`;
 
-	function connectRealtime() {
+	async function fetchTicket(): Promise<string | null> {
+		try {
+			const res: any = await proxyPost({ path: 'realtime', ep: 'ticket' });
+			const ticket = res?.ticket ?? res?.data?.ticket;
+			console.log('ticket:', ticket);
+			return typeof ticket === 'string' ? ticket : null;
+		} catch (e) {
+			console.error('gagal ambil ticket:', e);
+			return null;
+		}
+	}
+
+	let retries = 0;
+
+	async function connectRealtime() {
 		if (socket) return;
+
+		const ticket = await fetchTicket();
+		if (!ticket) return;
+
 		const s = io(`${PUBLIC_API_URL}/wss`, {
-			auth: async (cb) => {
-				try {
-					const res = await proxyPost<{ ticket: string }>({ path: 'realtime', ep: 'ticket' });
-					cb({ ticket: res.ticket });
-				} catch {
-					cb({});
-				}
-			}
+			auth: { ticket },
+			reconnection: false
 		});
 		socket = s;
 
-		s.on('connect', () => (wsConnected = true));
-		s.on('disconnect', (reason) => {
-			console.warn('WS disconnect:', reason);
-			wsConnected = false;
-			if (reason === 'io server disconnect') setTimeout(() => socket && s.connect(), 3000);
+		s.on('connect', () => {
+			wsConnected = true;
+			retries = 0;
 		});
+
+		s.on('disconnect', () => {
+			wsConnected = false;
+			socket = null;
+			s.close();
+			if (retries++ < 5) setTimeout(() => void connectRealtime(), 3000);
+		});
+
+		s.on('connect_error', (err) => console.error('WS connect_error:', err.message));
 		s.on('ticket:stats', applyStats);
 	}
 
