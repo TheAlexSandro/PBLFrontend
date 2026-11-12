@@ -47,7 +47,7 @@
 <section class="navbar">
 	<a href="/" class="container nav-inner">
 		<img src={Logo} alt="Logo SMKN 1 Blitar" />
-		<h1>SMKN 1 Blitar</h1>
+		<h1>PBL Smekensa</h1>
 	</a>
 
 	<div class="user" bind:this={root}>

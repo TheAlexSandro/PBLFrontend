@@ -68,7 +68,7 @@
 	let scanner = $state('');
 	let scannerBusy = $state(false);
 	let scannerError = $state('');
-	let wsConnected = $state(false);
+	let wsStatus = $state('connecting');
 	let socket: Socket | null = null;
 
 	onMount(async () => {
@@ -114,12 +114,12 @@
 		socket = s;
 
 		s.on('connect', () => {
-			wsConnected = true;
+			wsStatus = 'connected';
 			retries = 0;
 		});
 
 		s.on('disconnect', () => {
-			wsConnected = false;
+			wsStatus = 'disconnected';
 			socket = null;
 			s.close();
 			if (retries++ < 5) setTimeout(() => void connectRealtime(), 3000);
@@ -242,9 +242,18 @@
 				</div>
 			{/each}
 		</section>
-		<span class="ws" class:on={wsConnected} role="status">
+		<span
+			class="ws"
+			class:connected={wsStatus === 'connected'}
+			class:connecting={wsStatus === 'connecting'}
+			role="status"
+		>
 			<span class="dot"></span>
-			{wsConnected ? 'Realtime Update' : 'Tidak Terhubung'}
+			{wsStatus === 'connected'
+				? 'Realtime Update'
+				: wsStatus === 'connecting'
+					? 'Menghubungkan...'
+					: 'Tidak Terhubung'}
 		</span>
 
 		<nav class="menu" aria-label="Daftar tiket">
@@ -607,9 +616,14 @@
 		transition: background 0.2s ease;
 	}
 
-	.ws.on .dot,
+	.ws.connected .dot,
 	.scanner.on .dot {
 		background: var(--color-success);
+		animation: ping 1.8s ease-out infinite;
+	}
+
+	.ws.connecting .dot {
+		background: gray;
 		animation: ping 1.8s ease-out infinite;
 	}
 
