@@ -90,7 +90,16 @@
 
 	function connectRealtime() {
 		if (socket) return;
-		const s = io(`${PUBLIC_API_URL}/wss`, { withCredentials: true });
+		const s = io(`${PUBLIC_API_URL}/wss`, {
+			auth: async (cb) => {
+				try {
+					const res = await proxyPost<{ ticket: string }>({ path: 'realtime', ep: 'ticket' });
+					cb({ ticket: res.ticket });
+				} catch {
+					cb({});
+				}
+			}
+		});
 		socket = s;
 
 		s.on('connect', () => (wsConnected = true));
@@ -98,11 +107,7 @@
 			wsConnected = false;
 			if (reason === 'io server disconnect') setTimeout(() => socket && s.connect(), 3000);
 		});
-
 		s.on('ticket:stats', applyStats);
-		s.on('scanner:status', ({ active }: { active: boolean }) => {
-			scanner = active ? 'yes' : 'no';
-		});
 	}
 
 	function applyStats(s: Stats) {
