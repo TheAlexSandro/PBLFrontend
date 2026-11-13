@@ -54,7 +54,7 @@
 		<form class="auth" method="post" onsubmit={auth}>
 			<div class="top">
 				<h1>Autentikasi</h1>
-				<p>Masukkan kata sandi untuk mengakses dashboard</p>
+				<p>Masukkan kredensial untuk mengakses dashboard</p>
 			</div>
 
 			<label for="username">Username</label>
@@ -99,7 +99,7 @@
 				>{!isLoading ? 'Masuk' : 'Memproses...'}</button
 			>
 
-			<div class="bot">Kata sandi dapat dilihat melalui spreadsheet.</div>
+			<div class="bot">Kredensial dapat dilihat melalui spreadsheet.</div>
 		</form>
 	</section>
 
