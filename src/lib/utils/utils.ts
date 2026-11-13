@@ -1,8 +1,8 @@
 import { proxyGet } from './api';
 
-export const isLoggedIn = async () => {
+export const isLoggedIn = async (redirectOn401?: boolean) => {
 	try {
-		const res: any = await proxyGet({ path: 'auth', ep: 'isLoggedIn' });
+		const res: any = await proxyGet({ path: 'auth', ep: 'isLoggedIn' }, { redirectOn401 });
 		if (!res?.ok) return false;
 		if (res?.['status_code'] !== 200) return false;
 		return true;

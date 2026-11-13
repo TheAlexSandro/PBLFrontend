@@ -98,8 +98,8 @@
 	const logTo = $derived(logs.length ? logOffset + logs.length : 0);
 
 	onMount(async () => {
-		const log = await isLoggedIn();
-		if (!log) return (window.location.href = '/auth');
+		const log = await isLoggedIn(true);
+		if (!log) return;
 		windowLoading = false;
 		void loadStats();
 		void loadScanner();

@@ -16,7 +16,7 @@ type Options = {
 };
 
 async function request<T>(params: Params, opts: Options = {}): Promise<T> {
-	const { method = 'GET', body, signal, redirectOn401 = true } = opts;
+	const { method = 'GET', body, signal, redirectOn401 = false } = opts;
 
 	const qs = new URLSearchParams();
 	for (const [k, v] of Object.entries(params)) {
@@ -46,11 +46,14 @@ async function request<T>(params: Params, opts: Options = {}): Promise<T> {
 			res.status
 		);
 	if (json?.ok === false) throw new ApiError(json?.message ?? 'Permintaan gagal', res.status);
-	return json?.result ?? json as T;
+	return json?.result ?? (json as T);
 }
 
-export function proxyGet<T>(params: Params, signal?: AbortSignal): Promise<T> {
-	return request<T>(params, { signal });
+export function proxyGet<T>(
+	params: Params,
+	opts?: { signal?: AbortSignal; redirectOn401?: boolean }
+): Promise<T> {
+	return request<T>(params, { ...opts });
 }
 
 export function proxyPost<T>(

@@ -120,7 +120,7 @@
 			? { path: 'admin', ep: 'searchTickets', q, type, year, page: pageNum, limit }
 			: { path: 'admin', ep: 'getTickets', type, year, page: pageNum, limit };
 
-		proxyGet<unknown>(params, ctrl.signal)
+		proxyGet<unknown>(params, { signal: ctrl.signal })
 			.then((r) => {
 				const n = normalize(r);
 				rows = n.items;
@@ -139,8 +139,8 @@
 	});
 
 	onMount(async () => {
-		const log = await isLoggedIn();
-		if (!log) return (window.location.href = '/auth');
+		const log = await isLoggedIn(true);
+		if (!log) return;
 		windowLoading = false;
 
 		try {
