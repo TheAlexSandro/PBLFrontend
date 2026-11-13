@@ -29,7 +29,8 @@ async function request<T>(params: Params, opts: Options = {}): Promise<T> {
 		...(body !== undefined && {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(body)
-		})
+		}),
+		credentials: 'include'
 	});
 
 	if (res.status === 401) {
