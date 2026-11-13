@@ -40,7 +40,7 @@ async function request<T>(params: Params, opts: Options = {}): Promise<T> {
 		}
 		throw new ApiError('Tidak diizinkan', 401);
 	}
-	const json = await res.json().catch(() => null);
+	const json: any = await res.json().catch(() => null);
 	if (!res.ok)
 		throw new ApiError(
 			json['message'] ? `Error: ${json['message']}` : `Internal server error.`,
