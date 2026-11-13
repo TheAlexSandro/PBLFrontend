@@ -5,7 +5,7 @@
 	import { onMount, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { isLoggedIn } from '#lib/utils/utils.ts';
+	import { isLoggedIn, fmtDate } from '#lib/utils/utils.ts';
 	import { proxyGet } from '#lib/utils/api.ts';
 
 	type TicketType = 'SCANNED' | 'NOT_SCANNED' | 'TOTAL';
@@ -99,12 +99,6 @@
 	}
 
 	const isScanned = (t: Ticket) => Boolean(t.scannedAt ?? t.scanned_at ?? t.isScanned ?? t.scanned);
-	const fmtDate = (v: unknown) => {
-		const d = new Date(String(v ?? ''));
-		return Number.isNaN(d.getTime())
-			? '-'
-			: d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-	};
 
 	$effect(() => {
 		const u = q;
@@ -350,7 +344,7 @@
 		flex-direction: column;
 		gap: 20px;
 		width: min(100% - 32px, 960px);
-		margin: 32px auto 48px;
+		margin: 20px auto 48px;
 	}
 
 	.back {

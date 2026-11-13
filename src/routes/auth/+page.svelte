@@ -9,6 +9,7 @@
 	let windowLoading = $state(true);
 	let showPassword = $state(false);
 	let pwd = $state('');
+	let usn = $state('');
 	let inputError = $state('');
 	let isLoading = $state(false);
 
@@ -23,12 +24,16 @@
 		isLoading = true;
 		inputError = '';
 		try {
-			await proxyPost({ path: 'auth', ep: 'signIn' }, { pwd }, { redirectOn401: false });
+			await proxyPost(
+				{ path: 'auth', ep: 'signIn' },
+				{ pwd, username: usn },
+				{ redirectOn401: false }
+			);
 			window.location.href = '/dashboard';
 		} catch (err) {
 			inputError =
 				err instanceof ApiError && err.status === 401
-					? 'Kata sandi salah'
+					? 'Username atau kata sandi salah'
 					: 'Something went wrong...';
 			isLoading = false;
 		}
@@ -50,6 +55,18 @@
 			<div class="top">
 				<h1>Autentikasi</h1>
 				<p>Masukkan kata sandi untuk mengakses dashboard</p>
+			</div>
+
+			<label for="username">Username</label>
+			<div class="field">
+				<input
+					type="text"
+					id="username"
+					name="username"
+					placeholder="username..."
+					bind:value={usn}
+					required
+				/>
 			</div>
 
 			<label for="sandi">Kata Sandi</label>

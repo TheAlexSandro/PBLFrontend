@@ -46,7 +46,7 @@ async function request<T>(params: Params, opts: Options = {}): Promise<T> {
 			res.status
 		);
 	if (json?.ok === false) throw new ApiError(json?.message ?? 'Permintaan gagal', res.status);
-	return json?.result as T;
+	return json?.result ?? json as T;
 }
 
 export function proxyGet<T>(params: Params, signal?: AbortSignal): Promise<T> {

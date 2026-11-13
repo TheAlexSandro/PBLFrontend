@@ -3,7 +3,7 @@
 	import Footer from '#lib/components/footer.svelte';
 	import Load from '#lib/components/load.svelte';
 	import { onMount, onDestroy } from 'svelte';
-	import { isLoggedIn } from '#lib/utils/utils.ts';
+	import { isLoggedIn, fmtDate } from '#lib/utils/utils.ts';
 	import { proxyGet, proxyPost } from '#lib/utils/api.ts';
 	import { io, type Socket } from 'socket.io-client';
 	import { PUBLIC_API_URL } from '$app/env/public';
@@ -13,6 +13,14 @@
 		scanned: number;
 		notScanned: number;
 		perYear: { year: number; scanned: number }[];
+	};
+
+	type Log = {
+		id: number;
+		code: string;
+		ticketId: string | null;
+		result: 'VALID' | 'ALREADY_SCANNED' | 'NOT_FOUND';
+		createdAt?: string;
 	};
 
 	const cards = [
@@ -57,6 +65,12 @@
 			tone: 'var(--color-primary)'
 		}
 	] as const;
+	const LIMIT = 10;
+	const RESULT_LABEL = {
+		VALID: 'Valid',
+		ALREADY_SCANNED: 'Sudah discan',
+		NOT_FOUND: 'Tidak ditemukan'
+	} as const;
 
 	let windowLoading = $state(true);
 	let stats = $state<Stats | null>(null);
@@ -71,12 +85,25 @@
 	let wsStatus = $state('connecting');
 	let socket: Socket | null = null;
 
+	let logs = $state<Log[]>([]);
+	let logPage = $state(1);
+	let logTotal = $state(0);
+	let logLoading = $state(true);
+	let logError = $state('');
+	let logReq = 0;
+
+	const logPages = $derived(Math.max(1, Math.ceil(logTotal / LIMIT)));
+	const logOffset = $derived((logPage - 1) * LIMIT);
+	const logFrom = $derived(logs.length ? logOffset + 1 : 0);
+	const logTo = $derived(logs.length ? logOffset + logs.length : 0);
+
 	onMount(async () => {
 		const log = await isLoggedIn();
 		if (!log) return (window.location.href = '/auth');
 		windowLoading = false;
 		void loadStats();
 		void loadScanner();
+		void loadLogs();
 		connectRealtime();
 	});
 
@@ -88,11 +115,9 @@
 	const fmt = (n: number) => new Intl.NumberFormat('id-ID').format(n);
 	const viewHref = (type: string) => `/dashboard/view?type=${type}${year ? `&year=${year}` : ''}`;
 
-	async function fetchTicket(): Promise<string | null> {
+	async function requestConnect() {
 		try {
-			const res: any = await proxyPost({ path: 'realtime', ep: 'ticket' });
-			const ticket = res?.ticket ?? res?.data?.ticket;
-			return typeof ticket === 'string' ? ticket : null;
+			await proxyPost({ path: 'auth', ep: 'requestConnect' });
 		} catch (e) {
 			console.error('gagal ambil ticket:', e);
 			return null;
@@ -104,12 +129,11 @@
 	async function connectRealtime() {
 		if (socket) return;
 
-		const ticket = await fetchTicket();
-		if (!ticket) return;
-
+		await requestConnect();
 		const s = io(`${PUBLIC_API_URL}/wss`, {
-			auth: { ticket },
-			reconnection: false
+			auth: { wsAuth: true },
+			reconnection: false,
+			withCredentials: true
 		});
 		socket = s;
 
@@ -127,9 +151,11 @@
 
 		s.on('connect_error', (err) => console.error('WS connect_error:', err.message));
 		s.on('ticket:stats', applyStats);
+		s.on('ticket:refreshLogs', applyStats);
 	}
 
 	function applyStats(s: Stats) {
+		void loadLogs();
 		years = [...new Set([...years, ...s.perYear.map((p) => p.year)])].sort((a, b) => b - a);
 
 		if (!year) {
@@ -182,6 +208,52 @@
 		} finally {
 			if (id === reqId) loading = false;
 		}
+	}
+
+	function pageList(current: number, last: number): (number | '…')[] {
+		if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+		const nums = [...new Set([1, last, current - 1, current, current + 1])]
+			.filter((n) => n >= 1 && n <= last)
+			.sort((a, b) => a - b);
+		const out: (number | '…')[] = [];
+		nums.forEach((n, i) => {
+			if (i && n - nums[i - 1] > 1) out.push('…');
+			out.push(n);
+		});
+		return out;
+	}
+
+	async function loadLogs() {
+		const id = ++logReq;
+		logLoading = true;
+		try {
+			const data = await proxyGet<{ total: number; logs: Log[] }>({
+				path: 'admin',
+				ep: 'getLogs',
+				page: logPage,
+				limit: LIMIT
+			});
+			if (id !== logReq) return;
+			logs = data?.logs ?? [];
+			logTotal = Number(data?.total ?? 0);
+			logError = '';
+
+			if (!logs.length && logPage > 1) {
+				logPage = Math.max(1, Math.ceil(logTotal / LIMIT));
+				void loadLogs();
+			}
+		} catch (e) {
+			if (id !== logReq) return;
+			logError = e instanceof Error ? e.message : 'Gagal memuat log';
+		} finally {
+			if (id === logReq) logLoading = false;
+		}
+	}
+
+	function goLog(p: number) {
+		if (p < 1 || p > logPages || p === logPage) return;
+		logPage = p;
+		void loadLogs();
 	}
 
 	function onYearChange(e: Event & { currentTarget: HTMLSelectElement }) {
@@ -256,7 +328,88 @@
 					: 'Tidak Terhubung'}
 		</span>
 
-		<nav class="menu" aria-label="Daftar tiket">
+		<section class="logs" aria-label="Log scan">
+			<h2>Log terbaru</h2>
+
+			{#if logError}
+				<div class="alert" role="alert">
+					<span>{logError}</span>
+					<button type="button" onclick={loadLogs}>Coba lagi</button>
+				</div>
+			{/if}
+
+			<div class="table-wrap" class:dim={logLoading && logs.length > 0}>
+				<table>
+					<thead>
+						<tr>
+							<th class="no">No</th>
+							<th>Waktu</th>
+							<th>Kode</th>
+							<th>Hasil</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#if logLoading && !logs.length}
+							{#each Array(5) as _}
+								<tr><td colspan="4"><span class="sk-row"></span></td></tr>
+							{/each}
+						{:else if !logs.length}
+							<tr><td colspan="4" class="empty">Belum ada log.</td></tr>
+						{:else}
+							{#each logs as l, i (l.id)}
+								<tr>
+									<td class="no">{logOffset + i + 1}</td>
+									<td>{fmtDate(l.createdAt)}</td>
+									<td class="mono" title={l.code}>{l.code}</td>
+									<td><span class="badge {l.result}">{RESULT_LABEL[l.result] ?? l.result}</span></td
+									>
+								</tr>
+							{/each}
+						{/if}
+					</tbody>
+				</table>
+			</div>
+
+			<footer class="pager">
+				<span class="pinfo">Menampilkan {fmt(logFrom)}–{fmt(logTo)} dari {fmt(logTotal)}</span>
+				<div class="pages">
+					<button
+						type="button"
+						aria-label="Halaman sebelumnya"
+						disabled={logPage <= 1}
+						onclick={() => goLog(logPage - 1)}
+					>
+						<i class="ri-arrow-left-s-line"></i>
+					</button>
+
+					{#each pageList(logPage, logPages) as p}
+						{#if p === '…'}
+							<span class="gap">…</span>
+						{:else}
+							<button
+								type="button"
+								class:active={p === logPage}
+								aria-current={p === logPage ? 'page' : undefined}
+								onclick={() => goLog(p)}
+							>
+								{p}
+							</button>
+						{/if}
+					{/each}
+
+					<button
+						type="button"
+						aria-label="Halaman berikutnya"
+						disabled={logPage >= logPages}
+						onclick={() => goLog(logPage + 1)}
+					>
+						<i class="ri-arrow-right-s-line"></i>
+					</button>
+				</div>
+			</footer>
+		</section>
+
+		<nav class="menu" aria-label="menu">
 			<h2>Lihat daftar tiket</h2>
 			{#each menus as m}
 				<a class="item" href={viewHref(m.type)} style="--tone: {m.tone}">
@@ -269,9 +422,7 @@
 					<i class="ri-arrow-right-s-line chev"></i>
 				</a>
 			{/each}
-		</nav>
 
-		<nav class="menu" aria-label="Daftar tiket">
 			<h2>Pengaturan</h2>
 			<section
 				class="scanner"
@@ -321,7 +472,7 @@
 		flex-direction: column;
 		gap: 24px;
 		width: min(100% - 32px, 960px);
-		margin: 32px auto 48px;
+		margin: 20px auto 48px;
 	}
 
 	.head {
@@ -635,5 +786,170 @@
 		100% {
 			box-shadow: 0 0 0 6px transparent;
 		}
+	}
+
+	.logs {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.logs h2 {
+		font-size: 1.05rem;
+		font-weight: 600;
+	}
+
+	.table-wrap {
+		overflow-x: auto;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 16px;
+		transition: opacity 0.2s ease;
+	}
+
+	.table-wrap.dim {
+		opacity: 0.55;
+	}
+
+	.table-wrap table {
+		width: 100%;
+		min-width: 520px;
+		border-collapse: collapse;
+		font-size: 0.9rem;
+	}
+
+	.table-wrap th,
+	.table-wrap td {
+		padding: 12px 16px;
+		text-align: left;
+		white-space: nowrap;
+	}
+
+	.table-wrap thead th {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-neutral);
+		background: color-mix(in srgb, var(--color-bg) 50%, transparent);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.table-wrap tbody tr:not(:last-child) td {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.table-wrap tbody tr:hover td {
+		background: color-mix(in srgb, var(--color-on-dark) 3%, transparent);
+	}
+
+	.table-wrap .no {
+		width: 56px;
+		color: var(--color-neutral);
+	}
+
+	.table-wrap .mono {
+		max-width: 180px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-family: ui-monospace, monospace;
+		font-size: 0.8rem;
+		color: var(--color-neutral);
+	}
+
+	.table-wrap .empty {
+		padding: 40px 16px;
+		text-align: center;
+		color: var(--color-neutral);
+	}
+
+	.sk-row {
+		display: block;
+		height: 18px;
+		background: var(--color-border);
+		border-radius: 6px;
+		animation: pulse 1.2s ease-in-out infinite;
+	}
+
+	.badge {
+		display: inline-block;
+		padding: 3px 10px;
+		font-size: 0.78rem;
+		font-weight: 600;
+		border-radius: 999px;
+	}
+
+	.badge.VALID {
+		color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 14%, transparent);
+	}
+
+	.badge.ALREADY_SCANNED {
+		color: var(--color-warning);
+		background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+	}
+
+	.badge.NOT_FOUND {
+		color: var(--color-danger);
+		background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+	}
+
+	.pager {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.pinfo {
+		font-size: 0.85rem;
+		color: var(--color-neutral);
+	}
+
+	.pages {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.pages button {
+		display: grid;
+		place-items: center;
+		min-width: 38px;
+		height: 38px;
+		padding: 0 10px;
+		font-size: 0.9rem;
+		color: var(--color-on-dark);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		cursor: pointer;
+		transition: border-color 0.15s ease;
+	}
+
+	.pages button:hover:not(:disabled):not(.active) {
+		border-color: var(--color-primary);
+	}
+
+	.pages button.active {
+		font-weight: 600;
+		background: var(--color-primary);
+		border-color: var(--color-primary);
+	}
+
+	.pages button:disabled {
+		color: var(--color-neutral);
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.pages button:focus-visible {
+		outline: 2px solid var(--color-link);
+		outline-offset: 2px;
+	}
+
+	.gap {
+		padding: 0 4px;
+		color: var(--color-neutral);
 	}
 </style>
