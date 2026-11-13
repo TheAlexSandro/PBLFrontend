@@ -34,6 +34,7 @@
 		loggingOut = true;
 		try {
 			await proxyPost({ path: 'auth', ep: 'signOut' }, undefined, { redirectOn401: false });
+			window.location.reload();
 		} catch (e) {
 			alert(e instanceof Error ? e.message : 'Gagal keluar');
 			loggingOut = false;
