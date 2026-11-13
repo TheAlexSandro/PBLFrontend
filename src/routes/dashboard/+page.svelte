@@ -117,7 +117,8 @@
 
 	async function requestConnect() {
 		try {
-			await proxyPost({ path: 'auth', ep: 'requestConnect' });
+			const t: any = await proxyPost({ path: 'auth', ep: 'requestConnect' });
+			return t?.result?.['ws.access'];
 		} catch (e) {
 			console.error('gagal ambil ticket:', e);
 			return null;
@@ -127,14 +128,17 @@
 	let retries = 0;
 
 	async function connectRealtime() {
-		if (socket) return;
+		if (socket) {
+			wsStatus = 'disconnected';
+			return;
+		}
 
-		await requestConnect();
+		const wsToken = await requestConnect();
+		if (wsToken) return;
+
 		const s = io(`${PUBLIC_API_URL}/wss`, {
-			auth: { wsAuth: true },
-			reconnection: false,
-			withCredentials: true,
-			transports: ['websocket']
+			auth: { wsToken },
+			reconnection: true
 		});
 		socket = s;
 
