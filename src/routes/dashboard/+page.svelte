@@ -118,7 +118,7 @@
 	async function requestConnect() {
 		try {
 			const t: any = await proxyPost({ path: 'auth', ep: 'requestConnect' });
-			return t?.result?.['ws.access'];
+			return t?.['ws.access'];
 		} catch (e) {
 			console.error('gagal ambil ticket:', e);
 			return null;
@@ -128,13 +128,13 @@
 	let retries = 0;
 
 	async function connectRealtime() {
-		if (socket) {
+		if (socket) return;
+
+		const wsToken = await requestConnect();
+		if (!wsToken) {
 			wsStatus = 'disconnected';
 			return;
 		}
-
-		const wsToken = await requestConnect();
-		if (wsToken) return;
 
 		const s = io(`${PUBLIC_API_URL}/wss`, {
 			auth: { wsToken },
@@ -327,7 +327,7 @@
 		>
 			<span class="dot"></span>
 			{wsStatus === 'connected'
-				? 'Realtime Update'
+				? 'Connected - Realtime Update'
 				: wsStatus === 'connecting'
 					? 'Menghubungkan...'
 					: 'Tidak Terhubung'}
