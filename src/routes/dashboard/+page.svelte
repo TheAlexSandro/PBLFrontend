@@ -133,7 +133,8 @@
 		const s = io(`${PUBLIC_API_URL}/wss`, {
 			auth: { wsAuth: true },
 			reconnection: false,
-			withCredentials: true
+			withCredentials: true,
+			transports: ['websocket']
 		});
 		socket = s;
 
