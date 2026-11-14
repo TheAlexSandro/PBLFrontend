@@ -28,5 +28,9 @@ export const variables = defineEnvVars({
 	TICM_REPO: {
 		public: true,
 		static: true
+	},
+	ALLOWED_ORIGINS: {
+		public: false,
+		static: true
 	}
 });
