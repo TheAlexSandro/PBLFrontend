@@ -169,8 +169,8 @@
 		error = '';
 
 		const params = q
-			? { path: 'admin', ep: 'searchTickets', q, page: pageNum, limit }
-			: { path: 'admin', ep: 'getTickets', page: pageNum, limit };
+			? { path: 'admin', ep: 'searchTickets', q, page: pageNum, limit, type: 'TOTAL' }
+			: { path: 'admin', ep: 'getTickets', page: pageNum, limit, type: 'TOTAL' };
 
 		proxyGet<unknown>(params, { signal: ctrl.signal })
 			.then((r) => {
@@ -493,10 +493,10 @@
 		color: var(--color-neutral);
 	}
 
-    .filter .item {
-        display: flex;
-        gap: 10px;
-    }
+	.filter .item {
+		display: flex;
+		gap: 10px;
+	}
 
 	.filter select {
 		min-width: 160px;
