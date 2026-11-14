@@ -450,6 +450,7 @@
 		gap: 20px;
 		width: min(100% - 32px, 960px);
 		margin: 20px auto 48px;
+		min-height: 95dvh;
 	}
 
 	.back {
