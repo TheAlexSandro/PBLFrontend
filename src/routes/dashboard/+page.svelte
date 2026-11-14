@@ -416,6 +416,16 @@
 		</section>
 
 		<nav class="menu" aria-label="menu">
+			<h2>Review</h2>
+			<a class="item" href="/dashboard/review" style="--tone: var(--color-danger)">
+				<span class="ico"><i class="ri-file-edit-line"></i></span>
+				<span class="txt">
+					<strong>Tinjau Tiket</strong>
+					<small>Tinjau tiket dan finalkan agar tiket dapat digunakan</small>
+				</span>
+				<i class="ri-arrow-right-s-line chev"></i>
+			</a>
+
 			<h2>Lihat daftar tiket</h2>
 			{#each menus as m}
 				<a class="item" href={viewHref(m.type)} style="--tone: {m.tone}">
