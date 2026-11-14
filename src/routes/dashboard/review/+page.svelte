@@ -74,7 +74,6 @@
 		finalError = '';
 		try {
 			await proxyPost({ path: 'admin', ep: 'makeFinal' });
-			showFinal = false;
 			window.location.reload();
 		} catch (e) {
 			finalError = e instanceof Error ? e.message : 'Gagal memfinalkan tiket';
@@ -234,31 +233,35 @@
 			<div>
 				<h1>Tinjau Tiket</h1>
 				<p>{fmt(total)} tiket</p>
-				<b style="color: var(--color-danger);"
-					>Setelah semua tiket dirasa benar, tekan tombol "finalkan" agar tiket dapat dipindai.</b
-				>
 			</div>
 
 			<div class="filters">
 				<label class="filter">
 					Per halaman
-					<select
-						value={String(limit)}
-						onchange={(e) => go({ limit: e.currentTarget.value, page: 1 })}
-					>
-						{#each LIMITS as l}
-							<option value={String(l)}>{l}</option>
-						{/each}
-					</select>
-				</label>
+					<div class="item">
+						<select
+							value={String(limit)}
+							onchange={(e) => go({ limit: e.currentTarget.value, page: 1 })}
+						>
+							{#each LIMITS as l}
+								<option value={String(l)}>{l}</option>
+							{/each}
+						</select>
 
-				{#if !isFinal}
-					<button type="button" class="btn-final" onclick={openFinal}> FINALKAN </button>
-				{:else}
-					<span class="final-badge"><i class="ri-lock-line"></i> Sudah final</span>
-				{/if}
+						{#if !isFinal}
+							<button type="button" class="btn-final" onclick={openFinal}> FINALKAN </button>
+						{:else}
+							<span class="final-badge"><i class="ri-lock-line"></i> Sudah final</span>
+						{/if}
+					</div>
+				</label>
 			</div>
 		</header>
+		{#if !isFinal}
+			<b style="color: var(--color-danger);"
+				>Setelah semua tiket dirasa benar, tekan tombol "finalkan" agar tiket dapat dipindai.</b
+			>
+		{/if}
 
 		<form
 			class="search"
@@ -320,7 +323,7 @@
 				<tbody>
 					{#if isFinal}
 						<tr>
-							<td colspan="4" class="empty">Tidak ada tiket untuk ditinjau</td>
+							<td colspan="4" class="empty">Tidak ada tiket untuk ditinjau.</td>
 						</tr>
 					{:else if loading && !rows.length}
 						{#each Array(6) as _}
@@ -331,7 +334,7 @@
 					{:else if !rows.length}
 						<tr>
 							<td colspan="4" class="empty">
-								{q ? `Tidak ada tiket untuk "${q}".` : 'Tidak ada tiket terbaru'}
+								{q ? `Tidak ada tiket untuk "${q}".` : 'Tidak ada tiket terbaru.'}
 							</td>
 						</tr>
 					{:else}
@@ -349,7 +352,7 @@
 										disabled={deletingId === String(t.id)}
 										onclick={() => removeTicket(t)}
 									>
-										<i class="ri-delete-bin-line"></i>
+										<i class="ri-delete-bin-line"></i> Hapus
 									</button>
 								</td>
 							</tr>
@@ -478,16 +481,22 @@
 
 	.filters {
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: row;
 		gap: 12px;
 	}
 
-	.filters {
+	.filter {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: flex-end;
-		gap: 12px;
+		flex-direction: column;
+		gap: 6px;
+		font-size: 0.8rem;
+		color: var(--color-neutral);
 	}
+
+    .filter .item {
+        display: flex;
+        gap: 10px;
+    }
 
 	.filter select {
 		min-width: 160px;
@@ -737,11 +746,11 @@
 	}
 
 	.del {
-		display: inline-grid;
+		display: flex;
 		place-items: center;
-		width: 34px;
-		height: 34px;
-		font-size: 1.1rem;
+		padding: 5px 10px;
+		font-size: 13px;
+		gap: 5px;
 		color: var(--color-danger);
 		background: color-mix(in srgb, var(--color-danger) 12%, transparent);
 		border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
