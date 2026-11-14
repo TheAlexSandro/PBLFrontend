@@ -12,9 +12,9 @@
 	type Ticket = Record<string, any>;
 
 	const TYPES: Record<TicketType, { title: string; tab: string }> = {
-		SCANNED: { title: 'Tiket terpindai', tab: 'Terpindai' },
-		NOT_SCANNED: { title: 'Tiket tidak terpindai', tab: 'Tidak terpindai' },
-		TOTAL: { title: 'Tiket keseluruhan', tab: 'Keseluruhan' }
+		SCANNED: { title: 'Tiket Dipindai', tab: 'Dipindai' },
+		NOT_SCANNED: { title: 'Tiket Tidak Dipindai', tab: 'Tidak Dipindai' },
+		TOTAL: { title: 'Tiket Teseluruhan', tab: 'Keseluruhan' }
 	};
 	const LIMITS = [10, 20, 50, 100];
 	const thisYear = new Date().getFullYear();
@@ -282,9 +282,9 @@
 								<td>{t.kelas ?? '-'}</td>
 								<td>
 									{#if isScanned(t)}
-										<span class="badge ok">Terpindai</span>
+										<span class="badge ok">Dipindai</span>
 									{:else}
-										<span class="badge no">Belum</span>
+										<span class="badge no">Belum Dipindai</span>
 									{/if}
 								</td>
 								<td>{isScanned(t) ? fmtDate(t.scannedAt ?? t.scanned_at) : '-'}</td>

@@ -26,24 +26,24 @@
 	const cards = [
 		{
 			key: 'scanned',
-			label: 'Tiket terpindai',
+			label: 'Tiket Dipindai',
 			icon: 'ri-checkbox-circle-line',
 			tone: 'var(--color-success)'
 		},
 		{
 			key: 'notScanned',
-			label: 'Belum terpindai',
+			label: 'Belum Dipindai',
 			icon: 'ri-time-line',
 			tone: 'var(--color-warning)'
 		},
-		{ key: 'total', label: 'Total tiket', icon: 'ri-ticket-2-line', tone: 'var(--color-primary)' }
+		{ key: 'total', label: 'Total Tiket', icon: 'ri-ticket-2-line', tone: 'var(--color-primary)' }
 	] as const;
 
 	const menus = [
 		{
 			type: 'SCANNED',
 			key: 'scanned',
-			title: 'Tiket terpindai',
+			title: 'Tiket Dipindai',
 			desc: 'Tiket yang sudah discan',
 			icon: 'ri-checkbox-circle-line',
 			tone: 'var(--color-success)'
@@ -51,7 +51,7 @@
 		{
 			type: 'NOT_SCANNED',
 			key: 'notScanned',
-			title: 'Tiket tidak terpindai',
+			title: 'Tiket Tidak Dipindai',
 			desc: 'Tiket yang belum discan',
 			icon: 'ri-time-line',
 			tone: 'var(--color-warning)'
@@ -59,7 +59,7 @@
 		{
 			type: 'TOTAL',
 			key: 'total',
-			title: 'Tiket keseluruhan',
+			title: 'Tiket Keseluruhan',
 			desc: 'Semua tiket yang terdaftar',
 			icon: 'ri-ticket-2-line',
 			tone: 'var(--color-primary)'
