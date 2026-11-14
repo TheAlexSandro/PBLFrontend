@@ -132,6 +132,7 @@
 		actionError = '';
 		try {
 			await proxyPost({ path: 'tickets', ep: 'deleteTicket', id: t.id });
+			alert('Tiket berhasil dihapus!\nSilahkan hapus juga yang di spreadsheet jika belum.');
 			if (rows.length === 1 && pageNum > 1) go({ page: pageNum - 1 });
 			else reloadKey++;
 		} catch (e) {
