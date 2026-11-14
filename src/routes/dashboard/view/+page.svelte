@@ -616,6 +616,7 @@
 
 	.badge {
 		display: inline-block;
+		width: fit-content;
 		padding: 3px 10px;
 		font-size: 0.78rem;
 		font-weight: 600;
