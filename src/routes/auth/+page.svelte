@@ -176,7 +176,6 @@
 		border-radius: 14px;
 		border: 0;
 		outline: 0;
-		text-align: center;
 		color: var(--color-on-dark);
 	}
 

@@ -13,7 +13,7 @@
 
 	const TYPES: Record<TicketType, { title: string; tab: string }> = {
 		SCANNED: { title: 'Tiket Dipindai', tab: 'Dipindai' },
-		NOT_SCANNED: { title: 'Tiket Tidak Dipindai', tab: 'Tidak Dipindai' },
+		NOT_SCANNED: { title: 'Tiket Belum Dipindai', tab: 'Belum Dipindai' },
 		TOTAL: { title: 'Tiket Teseluruhan', tab: 'Keseluruhan' }
 	};
 	const LIMITS = [10, 20, 50, 100];

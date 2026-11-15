@@ -51,7 +51,7 @@
 		{
 			type: 'NOT_SCANNED',
 			key: 'notScanned',
-			title: 'Tiket Tidak Dipindai',
+			title: 'Tiket Belum Dipindai',
 			desc: 'Tiket yang belum discan',
 			icon: 'ri-time-line',
 			tone: 'var(--color-warning)'
@@ -105,7 +105,6 @@
 		void loadStats();
 		void loadYears();
 		void loadScanner();
-		void loadLogs();
 		connectRealtime();
 	});
 
@@ -155,6 +154,7 @@
 			socket = null;
 			s.close();
 			if (retries++ < 5) setTimeout(() => void connectRealtime(), 3000);
+			void loadLogs();
 		});
 
 		s.on('connect_error', (err) => console.error('WS connect_error:', err.message));

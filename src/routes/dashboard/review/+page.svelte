@@ -247,7 +247,7 @@
 		<header class="head">
 			<div>
 				<h1>Tinjau Tiket</h1>
-				<p>{fmt(total)} tiket tahun {year}</p>
+				<p>{fmt(total)} tiket untuk ditinjau tahun {year}</p>
 			</div>
 
 			<div class="filters">
