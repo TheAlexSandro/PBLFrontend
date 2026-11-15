@@ -12,7 +12,7 @@
 		total: number;
 		scanned: number;
 		notScanned: number;
-		perYear: { year: number; scanned: number }[];
+		perYear?: { year: number; scanned: number }[];
 	};
 
 	type Log = {
@@ -100,8 +100,10 @@
 	onMount(async () => {
 		const log = await isLoggedIn(true);
 		if (!log) return;
+		year = String(new Date().getFullYear());
 		windowLoading = false;
 		void loadStats();
+		void loadYears();
 		void loadScanner();
 		void loadLogs();
 		connectRealtime();
@@ -157,11 +159,13 @@
 
 		s.on('connect_error', (err) => console.error('WS connect_error:', err.message));
 		s.on('ticket:stats', applyStats);
-		s.on('ticket:refreshLogs', applyStats);
+		s.on('ticket:refreshLogs', () => void loadLogs());
 	}
 
 	function applyStats(s: Stats) {
 		void loadLogs();
+		if (!s || !Array.isArray(s.perYear)) return;
+
 		years = [...new Set([...years, ...s.perYear.map((p) => p.year)])].sort((a, b) => b - a);
 
 		if (!year) {
@@ -197,6 +201,18 @@
 		}
 	}
 
+	async function loadYears() {
+		const current = new Date().getFullYear();
+		try {
+			const all = await proxyGet<Stats>({ path: 'tickets', ep: 'stats' });
+			const fromApi = (all?.perYear ?? []).map((p) => p.year);
+			// tahun berjalan selalu ada di pilihan, walau belum ada tiket yang discan
+			years = [...new Set([current, ...fromApi])].sort((a, b) => b - a);
+		} catch {
+			years = [current];
+		}
+	}
+
 	async function loadStats() {
 		const id = ++reqId;
 		loading = true;
@@ -205,9 +221,6 @@
 			const data = await proxyGet<Stats>({ path: 'tickets', ep: 'stats', year });
 			if (id !== reqId) return;
 			stats = data;
-			if (!years.length) {
-				years = data.perYear.map((p) => p.year).sort((a, b) => b - a);
-			}
 		} catch (e) {
 			if (id !== reqId) return;
 			error = e instanceof Error ? e.message : 'Gagal memuat data';

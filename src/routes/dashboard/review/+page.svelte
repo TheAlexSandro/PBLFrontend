@@ -10,9 +10,7 @@
 
 	type Ticket = Record<string, any>;
 
-	const TYPE = 'NOT_SCANNED';
 	const LIMITS = [10, 20, 50, 100];
-
 	const q = $derived((page.url.searchParams.get('q') ?? '').trim());
 	const pageNum = $derived(Math.max(1, Number(page.url.searchParams.get('page')) || 1));
 	const limit = $derived.by(() => {
@@ -36,6 +34,7 @@
 	let finalizing = $state(false);
 	let finalError = $state('');
 	let cancelBtn = $state<HTMLButtonElement | null>(null);
+	let year = $state('');
 
 	let qInput = $state(page.url.searchParams.get('q') ?? '');
 	let timer: ReturnType<typeof setTimeout>;
@@ -169,8 +168,23 @@
 		error = '';
 
 		const params = q
-			? { path: 'admin', ep: 'searchTickets', q, page: pageNum, limit, type: 'TOTAL' }
-			: { path: 'admin', ep: 'getTickets', page: pageNum, limit, type: 'TOTAL' };
+			? {
+					path: 'admin',
+					ep: 'searchTickets',
+					q,
+					page: pageNum,
+					limit,
+					year,
+					type: 'TOTAL'
+				}
+			: {
+					path: 'admin',
+					ep: 'getTickets',
+					page: pageNum,
+					limit,
+					year,
+					type: 'TOTAL'
+				};
 
 		proxyGet<unknown>(params, { signal: ctrl.signal })
 			.then((r) => {
@@ -211,6 +225,7 @@
 		if (!log) return;
 
 		await loadInfo();
+		year = String(new Date().getFullYear());
 		windowLoading = false;
 	});
 </script>
@@ -232,7 +247,7 @@
 		<header class="head">
 			<div>
 				<h1>Tinjau Tiket</h1>
-				<p>{fmt(total)} tiket</p>
+				<p>{fmt(total)} tiket tahun {year}</p>
 			</div>
 
 			<div class="filters">

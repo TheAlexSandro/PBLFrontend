@@ -166,7 +166,7 @@
 		<header class="head">
 			<div>
 				<h1>{TYPES[type].title}</h1>
-				<p>{fmt(total)} tiket{yearLabel ? ` • tahun ${yearLabel}` : ''}</p>
+				<p>{fmt(total)} tiket{yearLabel ? ` tahun ${yearLabel}` : ''}</p>
 			</div>
 
 			<div class="filters">
