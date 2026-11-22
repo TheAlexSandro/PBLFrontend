@@ -510,8 +510,12 @@
 	}
 
 	.filter .item {
+		background: none;
+		padding: 0;
+		border: none;
 		display: flex;
 		gap: 10px;
+		flex-shrink: 0;
 	}
 
 	.filter select {
