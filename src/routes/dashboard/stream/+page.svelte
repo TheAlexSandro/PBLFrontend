@@ -447,20 +447,6 @@
 		margin: 20px auto 48px;
 	}
 
-	.back {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		width: fit-content;
-		font-size: 0.9rem;
-		color: var(--color-neutral);
-		text-decoration: none;
-	}
-
-	.back:hover {
-		color: var(--color-on-dark);
-	}
-
 	.container {
 		display: grid;
 		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
