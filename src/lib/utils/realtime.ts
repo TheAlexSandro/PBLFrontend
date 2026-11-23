@@ -51,7 +51,7 @@ async function start() {
 		return;
 	}
 
-	const s = io(`${PUBLIC_API_URL}/wss`, {
+	const s = io(`${PUBLIC_API_URL}/stats`, {
 		auth: { wsToken },
 		reconnection: true,
 		transports: ['websocket']

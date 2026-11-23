@@ -71,7 +71,7 @@
 			desc: 'Lihat statistik tiket tahun ini dan tayangan kamera pemindai langsung',
 			icon: 'ri-video-on-line',
 			tone: '#7F00FF',
-			url: '/dashboard/stream'
+			url: '/dashboard/live'
 		}
 	] as const;
 

@@ -13,9 +13,14 @@ type Options = {
 
 const STALE_MS = 5000;
 
-async function getToken(): Promise<string | undefined> {
-	const res: any = await proxyPost({ path: 'stream', ep: 'viewerToken' });
-	return res?.token;
+async function requestConnect(): Promise<string | null> {
+	try {
+		const t: any = await proxyPost({ path: 'auth', ep: 'requestConnect' });
+		return t?.['ws.access'] ?? null;
+	} catch (e) {
+		console.error('gagal ambil ticket:', e);
+		return null;
+	}
 }
 
 export async function watchStreams({ getImage, onScanners, onState }: Options) {
@@ -26,28 +31,16 @@ export async function watchStreams({ getImage, onScanners, onState }: Options) {
 
 	onState(null, 'connecting');
 
-	let preload = await getToken().catch(() => undefined);
-	if (!preload) {
+	const wsToken = await requestConnect();
+	if (!wsToken) {
 		onState(null, 'error');
 		return { stop: () => {} };
 	}
 
 	const socket = io(`${PUBLIC_API_URL}/stream`, {
-		transports: ['websocket'],
+		auth: { wsToken },
 		reconnection: true,
-		auth: (cb) => {
-			if (preload) {
-				const token = preload;
-				preload = undefined;
-				return cb({ token });
-			}
-			getToken()
-				.then((token) => cb({ token }))
-				.catch(() => {
-					onState(null, 'error');
-					cb({});
-				});
-		}
+		transports: ['websocket']
 	});
 
 	const clear = (id: string) => {

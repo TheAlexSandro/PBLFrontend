@@ -305,7 +305,7 @@
 }
 
 .ws.connecting .dot {
-	background: gray;
+	background: var(--color-warning);
 	animation: ping 1.8s ease-out infinite;
 }
 

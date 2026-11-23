@@ -85,12 +85,12 @@
 				? 'Menghubungkan'
 				: scanners.length === 0
 					? 'Tidak ada scanner'
-					: `${liveCount}/${scanners.length} live`
+					: `${liveCount}/${scanners.length} Scanner`
 	);
 
 	const emptyMessage = $derived(
 		camStatus === 'error'
-			? 'Gagal terhubung / tidak punya akses'
+			? 'Gagal terhubung'
 			: camStatus === 'connecting'
 				? 'Menghubungkan…'
 				: 'Belum ada scanner yang online, buka layar scanner di aplikasi.'
